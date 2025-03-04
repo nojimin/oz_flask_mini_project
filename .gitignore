@@ -1,6 +1,20 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,pycharm+all,macos,windows,python,venv,flask,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,pycharm+all,macos,windows,python,venv,flask,jetbrains
 
+# .vscode 디렉토리 무시
+.vscode/
+
+# Python 캐시 파일 무시
+__pycache__/
+*.pyc
+*.pyo
+
+# 가상환경 무시
+.venv/
+
+# 환경 변수 파일 무시
+.env
+
 ### Flask ###
 instance/*
 !instance/.gitignore
@@ -135,6 +149,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env
 
 # Spyder project settings
 .spyderproject
