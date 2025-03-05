@@ -1,6 +1,6 @@
 # question.py
 from config import db
-from models import Question, Image
+from app.models import Question, Image
 from flask import abort
 
 # 질문 생성

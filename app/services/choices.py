@@ -1,6 +1,6 @@
 # choices.py
 from config import db
-from models import Choices, Question
+from app.models import Choices, Question
 from flask import abort
 
 # 선택지 생성

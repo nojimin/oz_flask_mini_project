@@ -1,16 +1,15 @@
 # routes.py
 from flask import Blueprint, request, jsonify, abort
-from flask_smorest import Api, abort
-from models import Question, Choices, Image
+from flask_smorest import abort
+from app.models import Question, Choices, Image
 from config import db
-from app.services.users import create_user, get_user_by_id, get_user_by_email, get_choice_by_id, create_answer
-from app.services.answers import submit_answers
+from app.services.users import create_user, get_user_by_id, get_user_by_email
+from app.services.answers import create_answer
 from app.services.images import upload_image, load_image
 from app.services.questions import create_question, get_question_by_id, get_all_questions
-from app.services.choices import create_choice, get_choices_by_question_id
+from app.services.choices import create_choice, get_choices_by_question_id, get_choice_by_id
 
 api = Blueprint("api", __name__)
-swagger = Api(api)  # Swagger-UI 설정
 
 # 기본 연결 확인
 @api.route("/", methods=["GET"])

@@ -1,5 +1,5 @@
 from config import db
-from models import User
+from app.models import User
 from flask import abort
 
 # 유저 생성
