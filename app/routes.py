@@ -67,4 +67,3 @@ def submit_answers():
     return jsonify({
         "message": f"User: {user_id}'s answers Success Create"
     }), 200
-
