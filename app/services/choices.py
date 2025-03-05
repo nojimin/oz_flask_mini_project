@@ -31,10 +31,8 @@ def get_choices_by_question_id(question_id):
     return choices
 
 # 선택지 단일 조회
-def get_choice_by_id(question_id, choice_id):
-    choices = get_choices_by_question_id(question_id)
-    choice = Choices.query.filter(Choices.id == choice_id, Choices.question_id == question_id).first()
-    # 선택지가 없으면 404 예외 발생
-    if not choices:
-        abort(404, description="선택지가 존재하지 않습니다.")
+def get_choice_by_id(choice_id):
+    choice = Choices.query.get(choice_id)
+    if not choice:
+        abort(404, description="해당 선택지가 존재하지 않습니다.")
     return choice
