@@ -1,3 +1,4 @@
+# question.py
 from config import db
 from models import Question, Image
 from flask import abort
@@ -12,7 +13,13 @@ def create_question(title, image_id, is_active=True, sqe=None):
     # 질문을 데이터베이스에 저장
     question = Question(title=title, image_id=image_id, is_active=is_active, sqe=sqe)
     db.session.add(question)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()  # 오류 발생 시 롤백
+        abort(500, message=f"질문 생성 중 오류 발생: {str(e)}")
+        
     return question
 
 # 질문 전체 조회
