@@ -2,7 +2,7 @@ from config import db
 from flask import Flask
 from flask_migrate import Migrate
 from app.routes import image_bp, api, question_choices_bp
-import app.models
+
 
 migrate = Migrate()
 
@@ -14,6 +14,10 @@ def create_app():
     application.secret_key = "oz_form_secret"
 
     db.init_app(application)
+
+    with application.app_context():
+        import app.models  # 모델을 명확히 로드하여 Flask-Migrate가 인식 가능하도록 함.
+
 
     migrate.init_app(application, db)
 

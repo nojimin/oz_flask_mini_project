@@ -74,10 +74,10 @@ class Image(CommonModel):
     def __init__(self, url, image_type):
         allowed_type = {"main", "sub"}
         if image_type not in allowed_type:
-            abort(400, f"Invalid type: {type}. Allowed values: {allowed_type}")
+            abort(400, f"Invalid type: {image_type}. Allowed values: {allowed_type}")
 
         self.url = url
-        self.type = type
+        self.type = image_type  # 수정: image_type을 type에 할당
 
     questions = db.relationship("Question", back_populates="image")
 
@@ -85,7 +85,7 @@ class Image(CommonModel):
         return {
             "id": self.id,
             "url": self.url,
-            "type": self.type.value if hasattr(self.type, "value") else self.type,
+            "type": self.type,  # 수정: self.type이 이미 문자열이므로 .value 제거
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
@@ -146,3 +146,4 @@ class Answer(CommonModel):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+

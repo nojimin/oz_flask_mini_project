@@ -5,9 +5,9 @@ from app.models import Question, Choices, Image
 from config import db
 from app.services.users import create_user, get_user_by_id, get_user_by_email
 from app.services.answers import create_answer
-from app.services.images import upload_image, load_image
 from app.services.questions import create_question, get_question_by_id, get_all_questions
 from app.services.choices import create_choice, get_choices_by_question_id, get_choice_by_id
+from app.services.images import upload_image, load_image
 
 api = Blueprint("api", __name__)
 
@@ -74,6 +74,7 @@ def submit_answers():
 
 image_bp = Blueprint('images', __name__)
 
+
 @image_bp.route('', methods=['GET', 'POST'])
 def handle_images():
     if request.method == 'GET':
@@ -83,26 +84,32 @@ def handle_images():
             return jsonify({
                 "id": image.id,
                 "url": image.url,
-                "description": image.description
+                "type": image.type
             })
         else:
             abort(400, description="이미지 ID가 필요합니다.")
 
     elif request.method == 'POST':
         data = request.get_json()
-        if not data or 'url' not in data:
-            abort(400, description="이미지 URL이 필요합니다.")
+        if not data or 'url' not in data or 'type' not in data:
+            abort(400, description="이미지 URL과 타입이 필요합니다.")
         
         url = data['url']
-        description = data.get('description', '')
-        new_image = upload_image(url, description)
+        image_type = data['type']
+        
+        # image_type이 올바른 값인지 확인
+        if image_type not in ['main', 'sub']:
+            abort(400, description="잘못된 이미지 타입입니다. 'main' 또는 'sub'만 가능합니다.")
+
+        new_image = upload_image(url, image_type)
         
         return jsonify({
             "message": "이미지가 성공적으로 업로드되었습니다.",
             "id": new_image.id,
             "url": new_image.url,
-            "description": new_image.description
+            "type": new_image.type
         }), 201
+
 
 # Blueprint 생성
 question_choices_bp = Blueprint('question_choices_bp', __name__)
@@ -186,3 +193,5 @@ def add_choice():
         return jsonify({"message": f"Content: {choice.content} choice Success Create"})
     except Exception as e:
         abort(500, message=f"선택지 생성 중 오류 발생: {str(e)}")
+
+
