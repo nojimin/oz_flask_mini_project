@@ -1,5 +1,5 @@
 # routes.py
-from flask import Blueprint, request, jsonify, abort
+from flask import Flask, Blueprint, request, jsonify, abort
 from flask_smorest import abort
 from app.models import Question, Choices, Image, User, Answer
 from config import db
@@ -9,15 +9,42 @@ from app.services.questions import create_question, get_question_by_id, get_all_
 from app.services.choices import create_choice, get_choices_by_question_id, get_choice_by_id
 from app.services.images import upload_image, load_image
 
-api = Blueprint("api", __name__)
+# Buleprint
+main_bp = Blueprint('main', __name__)
+image_bp = Blueprint('images', __name__)
+questions_bp = Blueprint('questions_bp', __name__)
+choice_bp = Blueprint('choice', __name__)
 
-# 기본 연결 확인
-@api.route("/", methods=["GET"])
+# 1. 기본 연결 확인
+@main_bp.route("/", methods=["GET"])
 def home():
     return jsonify({"message": "Success Connect"}), 200
 
-# 회원가입
-@api.route("/signup", methods=["POST"])
+# 2. 메인 이미지 가져오기
+@image_bp.route('/main', methods=['GET'])
+def get_main_image():
+    try:
+        print("메인 이미지 조회 시작")
+        # 'main' 타입의 이미지를 검색
+        main_image = Image.query.filter_by(image_type='main').first()
+
+        if not main_image:
+            abort(404, description="메인 이미지를 찾을 수 없습니다.")
+        
+        print(f"메인 이미지 URL: {main_image.url}")
+
+        # 응답 데이터 반환
+        return jsonify({
+            "image": main_image.url
+        })
+
+    except Exception as e:
+        print(f"오류 발생: {str(e)}")
+        # 예기치 않은 오류 발생 시 500 에러 반환
+        return jsonify({"message": f"서버 오류 발생: {str(e)}"}), 500
+
+# 3. 회원가입
+@main_bp.route("/signup", methods=["POST"])
 def signup():
     if not request.is_json:
         abort(415, description="Content-Type must be application/json")
@@ -38,8 +65,52 @@ def signup():
         "user_id": user.id
     }), 200
 
-# 답변 제출하기
-@api.route("/submit", methods=["POST"])
+# 4.1 질문 가져오기
+@questions_bp.route('/<int:question_id>', methods=['GET'])
+def get_question(question_id):
+    question = get_question_by_id(question_id)
+    choices = get_choices_by_question_id(question_id)
+
+    # 질문이 있는지 확인
+    if not question:
+        abort(404, message="질문을 찾을 수 없습니다.")
+
+    # 질문에 연결된 이미지 가져오기
+    image_url = None
+    if question.image_id:
+        image = Image.query.get(question.image_id)
+        image_url = image.url if image else None
+
+    return jsonify({
+        "id": question.id,
+        "title": question.title,
+        "image": image_url,
+        "choices": [
+            {"id": choice.id, "content": choice.content, "is_active": choice.is_active}
+            for choice in choices
+        ]
+    })
+
+# 4.2 질문 개수 확인
+@questions_bp.route('/count', methods=['GET'])
+def get_question_count():
+    count = Question.query.count()
+    return jsonify({"total": count})
+
+# 5. 선택지 가져오기
+@choice_bp.route('/<int:question_id>', methods=['GET'])
+def get_choices(question_id):
+    choices = get_choices_by_question_id(question_id)
+
+    return jsonify({
+        "choices": [
+            {"id": choice.id, "content": choice.content, "is_active": choice.is_active}
+            for choice in choices
+        ]
+    })
+
+# 6. 답변 제출하기
+@main_bp.route("/submit", methods=["POST"])
 def submit_answers():
     data = request.get_json()
     print(data)  # 요청 데이터를 확인
@@ -80,34 +151,7 @@ def submit_answers():
         "message": f"User: {user_id}'s answers Success Create"
     }), 200
 
-
-
-# 이미지 Blueprint 생성
-image_bp = Blueprint('images', __name__)
-
-# 메인 이미지 가져오기
-@image_bp.route('/main', methods=['GET'])
-def get_main_image():
-    try:
-        print("메인 이미지 조회 시작")
-        # 'main' 타입의 이미지를 검색
-        main_image = Image.query.filter_by(image_type='main').first()
-
-        if not main_image:
-            abort(404, description="메인 이미지를 찾을 수 없습니다.")
-        
-        print(f"메인 이미지 URL: {main_image.url}")
-
-        # 응답 데이터 반환
-        return jsonify({
-            "image": main_image.url
-        })
-
-    except Exception as e:
-        print(f"오류 발생: {str(e)}")
-        # 예기치 않은 오류 발생 시 500 에러 반환
-        return jsonify({"message": f"서버 오류 발생: {str(e)}"}), 500
-
+# 7.1 이미지 생성
 @image_bp.route('', methods=['POST'])
 def handle_images():
     data = request.get_json()
@@ -131,58 +175,8 @@ def handle_images():
         "message": f"ID: {new_image.id} Image Success Create"
     }), 201
 
-
-# Blueprint 생성
-questions_bp = Blueprint('questions_bp', __name__)
-question_bp = Blueprint('question_bp', __name__)
-choice_bp = Blueprint('choice', __name__)
-
-# 4.1 특정 질문 가져오기
-@questions_bp.route('/<int:question_id>', methods=['GET'])
-def get_question(question_id):
-    question = get_question_by_id(question_id)
-    choices = get_choices_by_question_id(question_id)
-
-    # 질문이 있는지 확인
-    if not question:
-        abort(404, message="질문을 찾을 수 없습니다.")
-
-    # 질문에 연결된 이미지 가져오기
-    image_url = None
-    if question.image_id:
-        image = Image.query.get(question.image_id)
-        image_url = image.url if image else None
-
-    return jsonify({
-        "id": question.id,
-        "title": question.title,
-        "image": image_url,
-        "choices": [
-            {"id": choice.id, "content": choice.content, "is_active": choice.is_active}
-            for choice in choices
-        ]
-    })
-
-# 4.2 질문 개수 확인
-@questions_bp.route('/count', methods=['GET'])
-def get_question_count():
-    count = Question.query.count()
-    return jsonify({"total": count})
-
-# 5. 특정 질문의 선택지 가져오기
-@choice_bp.route('/<int:question_id>', methods=['GET'])
-def get_choices(question_id):
-    choices = get_choices_by_question_id(question_id)
-
-    return jsonify({
-        "choices": [
-            {"id": choice.id, "content": choice.content, "is_active": choice.is_active}
-            for choice in choices
-        ]
-    })
-
 # 7.2 질문 생성
-@question_bp.route('', methods=['POST'])
+@main_bp.route('/question', methods=['POST'])
 def add_question():
     data = request.get_json()
     title = data.get('title')

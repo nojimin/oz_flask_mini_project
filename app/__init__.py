@@ -1,7 +1,7 @@
 from config import db
 from flask import Flask
 from flask_migrate import Migrate
-from app.routes import image_bp, api, questions_bp, question_bp, choice_bp
+from app.routes import main_bp, image_bp, questions_bp, choice_bp
 
 
 migrate = Migrate()
@@ -23,10 +23,9 @@ def create_app():
 
     # 이어서 블루 프린트 등록 코드를 작성해주세요!
     
-    application.register_blueprint(api, url_prefix="/api")
+    application.register_blueprint(main_bp)
     application.register_blueprint(image_bp, url_prefix="/images")
     application.register_blueprint(questions_bp, url_prefix="/questions")
-    application.register_blueprint(question_bp, url_prefix="/question")
     application.register_blueprint(choice_bp, url_prefix="/choice")
 
     return application
