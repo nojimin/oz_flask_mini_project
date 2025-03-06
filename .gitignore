@@ -45,7 +45,7 @@ sdist/
 var/
 wheels/
 share/python-wheels/
-*.egg-info/
+*.egg-info/F
 .installed.cfg
 *.egg
 MANIFEST
@@ -486,7 +486,6 @@ pyrightconfig.json
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
-[Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
 
