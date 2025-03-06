@@ -133,10 +133,12 @@ def handle_images():
 
 
 # Blueprint 생성
-question_choices_bp = Blueprint('question_choices_bp', __name__)
+questions_bp = Blueprint('questions_bp', __name__)
+question_bp = Blueprint('question_bp', __name__)
+choice_bp = Blueprint('choice', __name__)
 
 # 4.1 특정 질문 가져오기
-@question_choices_bp.route('/questions/<int:question_id>', methods=['GET'])
+@questions_bp.route('/<int:question_id>', methods=['GET'])
 def get_question(question_id):
     question = get_question_by_id(question_id)
     choices = get_choices_by_question_id(question_id)
@@ -162,13 +164,13 @@ def get_question(question_id):
     })
 
 # 4.2 질문 개수 확인
-@question_choices_bp.route('/questions/count', methods=['GET'])
+@questions_bp.route('/count', methods=['GET'])
 def get_question_count():
     count = Question.query.count()
     return jsonify({"total": count})
 
 # 5. 특정 질문의 선택지 가져오기
-@question_choices_bp.route('/choice/<int:question_id>', methods=['GET'])
+@choice_bp.route('/<int:question_id>', methods=['GET'])
 def get_choices(question_id):
     choices = get_choices_by_question_id(question_id)
 
@@ -180,7 +182,7 @@ def get_choices(question_id):
     })
 
 # 7.2 질문 생성
-@question_choices_bp.route('/question', methods=['POST'])
+@question_bp.route('', methods=['POST'])
 def add_question():
     data = request.get_json()
     title = data.get('title')
@@ -198,7 +200,7 @@ def add_question():
         abort(500, message=f"질문 생성 중 오류 발생: {str(e)}")
 
 # 7.3 선택지 생성
-@question_choices_bp.route('/choice', methods=['POST'])
+@choice_bp.route('', methods=['POST'])
 def add_choice():
     data = request.get_json()
     question_id = data.get('question_id')
