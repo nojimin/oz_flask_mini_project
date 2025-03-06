@@ -1,5 +1,5 @@
 from config import db
-from models import Answer, User, Choices
+from app.models import Answer, User, Choices
 from flask import abort
 
 # 답변 생성

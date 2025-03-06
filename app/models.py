@@ -57,27 +57,28 @@ class User(CommonModel):
             "age": self.age,
             "gender": self.gender,
             "email": self.email,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-        }
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+    }
 
 
 class Image(CommonModel):
     __tablename__ = "images"
-    url = db.Column(db.TEXT, nullable=False)
-    type = db.Column(db.String(10), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String(255), nullable=False)
+    image_type = db.Column(db.String(10), nullable=False)  # 'image_type' 컬럼이 정의되어 있어야 함
 
     __table_args__ = (
-        db.CheckConstraint("type IN ('main', 'sub')", name="check_image_type"),
+        db.CheckConstraint("image_type IN ('main', 'sub')", name="check_image_type"),  # 수정: 'image_type'으로 수정
     )
 
     def __init__(self, url, image_type):
         allowed_type = {"main", "sub"}
         if image_type not in allowed_type:
-            abort(400, f"Invalid type: {type}. Allowed values: {allowed_type}")
+            abort(400, f"Invalid type: {image_type}. Allowed values: {allowed_type}")
 
         self.url = url
-        self.type = type
+        self.image_type = image_type  # 수정: image_type을 올바르게 할당
 
     questions = db.relationship("Question", back_populates="image")
 
@@ -85,10 +86,11 @@ class Image(CommonModel):
         return {
             "id": self.id,
             "url": self.url,
-            "type": self.type.value if hasattr(self.type, "value") else self.type,
+            "type": self.image_type,  # 수정: 'type' 대신 'image_type' 사용
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+
 
 
 class Question(CommonModel):
@@ -146,3 +148,4 @@ class Answer(CommonModel):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
+
